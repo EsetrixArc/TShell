@@ -28,7 +28,7 @@ struct ShellConfig {
     std::string activeTheme  = "FancyML-1";
     std::string promptFmt    = "";
     std::string modsPath     = "~/.tsh/Mods";
-    std::string themesPath   = "Bin/Themes";
+    std::string themesPath   = "/usr/share/tshell/themes";  // legacy; dual-load now in main.cpp
     std::string historyFile  = "~/.tsh/history";
     std::string varsFile     = "~/.tsh/vars";
     int         historyMax   = 500;

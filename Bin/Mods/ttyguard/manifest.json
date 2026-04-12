@@ -1,0 +1,9 @@
+{
+  "id": "com.tshell.ttyguard",
+  "name": "ttyguard",
+  "version": "1.0.0",
+  "author": "tshell",
+  "description": "Unloads all mods when TShell is not running in an interactive TTY (script/pipe mode)",
+  "entry": "main.so",
+  "apiVersion": 5
+}

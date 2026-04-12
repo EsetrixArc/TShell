@@ -78,8 +78,9 @@ int main(int argc, char** argv) {
         std::cout << Color::BYELLOW << "[safe mode]" << Color::RESET << "\n";
 
     // ── Themes ───────────────────────────────────────────────────────────────
-    loadThemesFromDir(expandHome(g_cfg.themesPath));
-    if (home) loadThemesFromDir(std::string(home) + "/.tsh_themes");
+    // System-wide themes (installed by pkgbuild); user themes override
+    loadThemesFromDir("/usr/share/tshell/themes");
+    if (home) loadThemesFromDir(std::string(home) + "/.tsh/Themes");
 
     loadPersistVars();
 
@@ -90,12 +91,21 @@ int main(int argc, char** argv) {
 
     static ShellCallbacks baseCb = makeCallbacks("__base__");
     Modloader loader;
-    try {
-        g_mods = loader.loadMods(expandHome(g_cfg.modsPath), &baseCb, g_safeMode);
-    } catch (...) {
-        std::cerr << "tsh: failed to load mods directory\n";
-        // Non-fatal — continue without mods
-    }
+    // Load from system-wide directory first, then user directory (user overrides system)
+    auto loadModsDir = [&](const std::string& dir) {
+        try {
+            auto batch = loader.loadMods(dir, &baseCb, g_safeMode);
+            for (auto& lm : batch) g_mods.push_back(std::move(lm));
+        } catch (...) {
+            std::cerr << "tsh: failed to load mods from " << dir << "\n";
+        }
+    };
+    loadModsDir("/usr/lib/tshell/mods");
+    if (home) loadModsDir(std::string(home) + "/.tsh/Mods");
+
+    // Export g_mods address so mod .so files can locate the vector via dlsym.
+    // ttyguard and other system mods use this to manipulate the loaded mod list.
+    extern "C" { void* g_mods_ptr = static_cast<void*>(&g_mods); }
 
     // Re-inject per-mod callbacks with correct IDs
     static std::map<std::string, ShellCallbacks> modCbMap;

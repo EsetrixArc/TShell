@@ -44,22 +44,14 @@ package() {
             install -m644 "$dir/manifest.json" "$pkgdir/usr/lib/tshell/mods/$modname/manifest.json"
     done
 
-    # Install API headers (excluding Themes)
-    if [ -d "Bin/API" ]; then
-        find Bin/API -mindepth 1 -maxdepth 1 ! -name "Themes" | while read -r item; do
-            [ -e "$item" ] || continue
+    # Install API headers to /usr/include/TSh/  (#include <TSh/ModdingAPI.hpp>)
+    install -d "$pkgdir/usr/include/TSh"
+    install -Dm644 Bin/API/ModdingAPI.hpp       "$pkgdir/usr/include/TSh/ModdingAPI.hpp"
+    install -Dm644 Bin/API/DependencyLoader.hpp "$pkgdir/usr/include/TSh/DependencyLoader.hpp"
 
-            if [ -d "$item" ]; then
-                cp -r "$item" "$pkgdir/usr/include/"
-            else
-                install -Dm644 "$item" "$pkgdir/usr/include/$(basename "$item")"
-            fi
-        done
-    fi
-
-    # Install themes
-    if [ -d "Bin/API/Themes" ]; then
-        for theme in Bin/API/Themes/*; do
+    # Install system themes to /usr/share/tshell/themes/
+    if [ -d "Bin/Themes" ]; then
+        for theme in Bin/Themes/*; do
             [ -e "$theme" ] || continue
             install -Dm644 "$theme" "$pkgdir/usr/share/tshell/themes/$(basename "$theme")"
         done
