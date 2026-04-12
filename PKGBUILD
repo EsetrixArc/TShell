@@ -28,7 +28,7 @@ build() {
 package() {
     cd "$srcdir/TShell"
 
-    install -Dm755 TShell.o "$pkgdir/usr/bin/tsh"
+    install -Dm755 TShell "$pkgdir/usr/bin/tsh"
     install -Dm755 tshc     "$pkgdir/usr/bin/tshc"
 
     for dir in Bin/Mods/*/; do
@@ -43,6 +43,27 @@ package() {
         [ -f "$dir/manifest.json" ] && \
             install -m644 "$dir/manifest.json" "$pkgdir/usr/lib/tshell/mods/$modname/manifest.json"
     done
+
+    # Install API headers (excluding Themes)
+    if [ -d "Bin/API" ]; then
+        find Bin/API -mindepth 1 -maxdepth 1 ! -name "Themes" | while read -r item; do
+            [ -e "$item" ] || continue
+
+            if [ -d "$item" ]; then
+                cp -r "$item" "$pkgdir/usr/include/"
+            else
+                install -Dm644 "$item" "$pkgdir/usr/include/$(basename "$item")"
+            fi
+        done
+    fi
+
+    # Install themes
+    if [ -d "Bin/API/Themes" ]; then
+        for theme in Bin/API/Themes/*; do
+            [ -e "$theme" ] || continue
+            install -Dm644 "$theme" "$pkgdir/usr/share/tshell/themes/$(basename "$theme")"
+        done
+    fi
 
     install -Dm644 tshcfg.example "$pkgdir/usr/share/tshell/tshcfg.example"
 }

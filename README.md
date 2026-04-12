@@ -76,9 +76,8 @@ The PKGBUILD installs:
 | `/usr/lib/tshell/mods/` | Bundled mods |
 | `/usr/include/tshell/` | Public API headers for mod authors |
 | `/usr/share/tshell/themes/` | Bundled themes |
-| `/usr/share/tshell/tshcfg.example` | Example config |
-
 ---
+(Local themes/mods are stored in ~/.tsh/Themes | ~/.tsh/Mods)
 
 ## Configuration
 
@@ -148,7 +147,7 @@ Bin/Mods/MyMod/
 ### Mod API (v5) quick reference
 
 ```cpp
-#include "Bin/API/ModdingAPI.hpp"
+#include <TSh/ModdingAPI.hpp>
 
 class MyMod : public Mod {
 public:

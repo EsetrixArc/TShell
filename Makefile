@@ -22,7 +22,7 @@ CORE_SRCS := \
     src/core/introspect.cpp
 
 SRCS := main.cpp $(CORE_SRCS) Bin/Bin/Modloader.cpp
-BIN  := TShell.o
+BIN  := TShell
 
 MOD_FLAGS := -std=c++17 -O2 -shared -fPIC -I.
 
