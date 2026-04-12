@@ -45,13 +45,12 @@ static void handleSigInt(int) {
     rl_redisplay();
 }
 
-// patch:
-// global scope
-extern "C" void* g_mods_ptr = (void*)&g_mods;
-
 // =============================================================================
 //  main
 // =============================================================================
+
+// Exported so mod .so files can locate g_mods via dlsym(RTLD_DEFAULT, "g_mods_ptr").
+extern "C" void* g_mods_ptr = nullptr;
 
 int main(int argc, char** argv) {
     std::cout << Color::BGREEN << "Welcome to TShell V1." << Color::RESET << endl;
@@ -109,8 +108,8 @@ int main(int argc, char** argv) {
 
     // Export g_mods address so mod .so files can locate the vector via dlsym.
     // ttyguard and other system mods use this to manipulate the loaded mod list.
-    // extern "C" void* g_mods_ptr = static_cast<void*>(&g_mods);
-    g_mods_ptr = (void*)&g_mods;
+    g_mods_ptr = static_cast<void*>(&g_mods);
+
     // Re-inject per-mod callbacks with correct IDs
     static std::map<std::string, ShellCallbacks> modCbMap;
     for (auto& lm : g_mods) {

@@ -1,68 +1,53 @@
 // ttyguard/mod.cpp — Unload all other mods when not running in a TTY
 //
-// When TShell is invoked non-interactively (pipe, script, cron …) there is
-// usually no reason to run UI-oriented mods.  This mod detects the situation
-// in Init() and tears down every other loaded mod before the main startup
-// sequence calls their Init/Start.
+// Detects non-interactive sessions (pipe, script, cron …) via isatty() and
+// tears down every other loaded mod before their Init/Start runs, leaving the
+// shell in a bare, fast state for scripting.
 //
-// For this to work correctly, ttyguard MUST be the first mod loaded.
-// Install it in the system mod directory (/usr/lib/tshell/mods/) so it is
-// picked up before user mods from ~/.tsh/Mods.
+// Install in the SYSTEM mod directory (/usr/lib/tshell/mods/) so it is loaded
+// before user mods from ~/.tsh/Mods and can gate them first.
 //
-// Usage:   #include <TSh/ModdingAPI.hpp>
+// Build:
+//   g++ -std=c++17 -O2 -shared -fPIC -I. -IBin/API \
+//       Bin/Mods/ttyguard/mod.cpp -o Bin/Mods/ttyguard/main.so -ldl
 
 #include "../../API/ModdingAPI.hpp"
 
 #include <algorithm>
 #include <dlfcn.h>
 #include <iostream>
-#include <unistd.h>  // isatty, STDIN_FILENO
-
-// g_mods and g_interactive are defined in the shell binary and exported.
-// We access them via the linker (RTLD_DEFAULT) rather than a direct extern
-// so that this .so works whether built against the header-only API or the
-// full source tree.
-
-// Forward-declare the LoadedMod struct minimally so we can manipulate g_mods.
-// The real definition is in Modloader.hpp / globals.hpp — we only need the
-// fields we use here.
-struct LoadedMod;   // opaque forward; resolved by the linker at load time
-
-// Pull in the real vector type from the shell binary via dlsym.
-// We use a type-punned pointer because we can't include the full headers in
-// a standalone mod .so.  The layout of std::vector is stable within the same
-// ABI / compiler.
-#include <vector>
 #include <memory>
+#include <vector>
+#include <unistd.h>   // isatty, STDIN_FILENO
 
-// The shell binary exports these symbols:
-extern "C" {
-    // We read g_interactive directly — it's a plain bool.
-    extern bool g_interactive;
-}
-
-// g_mods is std::vector<LoadedMod>.  We need just enough of LoadedMod to
-// call reset() on the mod unique_ptr and dlclose the handle.  We use a
-// local mirror struct that matches the binary layout (unique_ptr + void* +
-// two strings + a bool).
+// ---------------------------------------------------------------------------
+//  g_mods_ptr
 //
-// IMPORTANT: this layout MUST match LoadedMod in Modloader.hpp exactly.
-//            If you change that struct, update this mirror too.
+//  The shell binary exports this symbol (file-scope extern "C" in main.cpp).
+//  It points at the std::vector<LoadedMod> that holds all loaded mods.
+//  We declare it extern here so the dynamic linker resolves it at dlopen time
+//  without any dlsym call — no mangling issues, no g_interactive dependency.
+// ---------------------------------------------------------------------------
+extern "C" void* g_mods_ptr;
+
+// ---------------------------------------------------------------------------
+//  Minimal mirror of LoadedMod
+//
+//  Must match the layout of LoadedMod in Modloader.hpp exactly:
+//      std::unique_ptr<Mod>  mod;
+//      void*                 handle;
+//      ModManifest           manifest;   ← we don't touch this
+//      std::string           sourcePath; ← we don't touch this
+//
+//  We only need the first two fields; the destructor of the erased element
+//  will clean up manifest and sourcePath normally.
+// ---------------------------------------------------------------------------
 struct LoadedModMirror {
     std::unique_ptr<Mod> mod;
-    void*                handle     = nullptr;
-    // manifest and sourcePath follow — we don't touch them
-    // (their destructors run normally when the vector element is erased)
+    void*                handle = nullptr;
+    // remaining fields (ModManifest + std::string) follow in memory;
+    // we never access them directly — their dtors run on erase().
 };
-
-// Access g_mods via dlsym so the .so doesn't need to link against the shell.
-static std::vector<LoadedModMirror>* getGMods() {
-    static auto* ptr = reinterpret_cast<std::vector<LoadedModMirror>*>(
-        dlsym(RTLD_DEFAULT, "g_mods_ptr"));  // exported by main binary
-    // Fallback: try the mangled vector symbol directly (implementation detail,
-    // fragile — the recommended path is for the shell to export g_mods_ptr).
-    return ptr;
-}
 
 class TtyGuardMod : public Mod {
 public:
@@ -82,25 +67,28 @@ public:
     }
 
     int Init() override {
-        if (g_interactive) return 0;   // TTY — nothing to do
+        // Use isatty() directly — no dependency on any shell-internal symbol.
+        if (isatty(STDIN_FILENO)) return 0;
 
         std::cerr << "[ttyguard] Non-TTY session — unloading all other mods\n";
 
-        auto* mods = getGMods();
-        if (!mods) {
-            // Shell didn't export g_mods_ptr; degrade gracefully.
-            std::cerr << "[ttyguard] warning: could not locate g_mods — "
-                         "mod unloading skipped\n";
+        if (!g_mods_ptr) {
+            std::cerr << "[ttyguard] warning: g_mods_ptr is null, skipping unload\n";
             return 0;
         }
 
+        auto* mods = static_cast<std::vector<LoadedModMirror>*>(g_mods_ptr);
+
+        // Cleanly destroy every mod that isn't ttyguard itself.
         for (auto& lm : *mods) {
             if (!lm.mod) continue;
-            if (lm.mod->meta.id == meta.id) continue;  // keep ourselves
+            if (lm.mod->meta.id == meta.id) continue;
             try { lm.mod.reset(); } catch (...) {}
             if (lm.handle) { dlclose(lm.handle); lm.handle = nullptr; }
         }
 
+        // Remove the now-dead entries from the vector.
+        // main()'s Init/Start loops will then only see ttyguard.
         mods->erase(
             std::remove_if(mods->begin(), mods->end(),
                 [&](const LoadedModMirror& lm) {
@@ -111,7 +99,7 @@ public:
         return 0;
     }
 
-    int Start()   override { return 0; }
+    int Start()              override { return 0; }
     int Execute(int, char**) override { return 0; }
 };
 
