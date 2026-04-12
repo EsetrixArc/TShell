@@ -1,0 +1,6 @@
+# ~/.tsh_themes/neon.theme  or  Bin/Themes/neon.theme
+# A high-contrast neon theme
+
+name        Neon
+description Electric neon colors — bright cyan & magenta
+prompt      %bcyan╔══[%bmagenta%bold$USER%reset%bcyan@%bmagenta$HOST%reset%bcyan]══[%bgreen$CWD%reset%bcyan]%byellow$EXITSTR%reset\n%bcyan╚══❯%reset 

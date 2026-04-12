@@ -1,0 +1,6 @@
+# Bin/Themes/solarized.theme
+# Warm solarized-inspired colors
+
+name        Solarized
+description Warm solarized-inspired palette
+prompt      %yellow$USER%reset%white@%reset%cyan$HOST%reset:%blue$CWD%reset%red$EXITSTR%reset $ 

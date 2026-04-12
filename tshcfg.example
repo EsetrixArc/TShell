@@ -1,0 +1,60 @@
+# ~/.tshcfg — tsh shell configuration  (v2)
+# Copy this file to ~/.tshcfg and edit to taste.
+# Reload at runtime with:  tshell reload
+
+# ── Theme ──────────────────────────────────────────────────────────────────────
+#
+#  Set a named theme (built-in or loaded from Bin/Themes/*.theme):
+theme FancyML-1
+#
+#  Available built-in themes:
+#    FancyML-1   two-line multi-prompt with brackets (default)
+#    Classic     user@host:cwd $
+#    Minimal     no color, plain
+#    Arrow       powerline-style arrow
+#    Git         includes $GITBRANCH slot (use with gitbranch mod)
+#    Pastel      soft pastel
+#    Root        red prompt for root sessions
+#
+#  Alternatively, set a raw prompt format (overrides theme):
+# prompt %bgreen%bold$USER%reset@%bcyan$HOST%reset:%bblue$CWD%reset%byellow$EXITSTR%reset $
+#
+#  Prompt tokens:
+#    $USER  $HOST  $CWD  $EXITSTR  -- built-in
+#    $GITBRANCH                    -- provided by the gitbranch mod
+#    $ANY_ENV_VAR                  -- any exported environment variable
+#    $CUSTOM_TOKEN                 -- tokens registered by mods via registerToken()
+#
+#  Color/style tokens:
+#    %reset %bold %dim
+#    %black  %red  %green  %yellow  %blue  %magenta  %cyan  %white
+#    %bred   %bgreen %byellow %bblue %bmagenta %bcyan %bwhite
+
+# ── Colors ─────────────────────────────────────────────────────────────────────
+color on
+
+# ── History ────────────────────────────────────────────────────────────────────
+history ~/.tsh_history
+histmax 2000
+
+# ── Paths ──────────────────────────────────────────────────────────────────────
+mods   Bin/Mods
+themes Bin/Themes
+
+# ── Aliases ────────────────────────────────────────────────────────────────────
+alias ll=ls -la --color=auto
+alias la=ls -A --color=auto
+alias l=ls -CF --color=auto
+alias ..=cd ..
+alias ...=cd ../..
+alias grep=grep --color=auto
+alias cls=clear
+alias reload=tshell reload
+alias h=history
+alias themes=tshell theme list
+alias mods=tshell mods list
+
+# ── Environment variables ──────────────────────────────────────────────────────
+# set  EDITOR=vim
+# set  PAGER=less
+# export PATH=/usr/local/bin:$PATH

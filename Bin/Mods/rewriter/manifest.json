@@ -1,0 +1,9 @@
+{
+  "id": "com.example.rewriter",
+  "name": "rewriter",
+  "version": "1.0.0",
+  "author": "example",
+  "description": "Middleware: typo correction, please→sudo, custom command rewrites",
+  "entry": "main.so",
+  "apiVersion": 5
+}

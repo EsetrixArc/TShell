@@ -1,0 +1,9 @@
+{
+  "id": "com.example.hookdemo",
+  "name": "hookdemo",
+  "version": "1.0.0",
+  "author": "example",
+  "description": "Demonstrates every TShell hook event with live logging",
+  "entry": "main.so",
+  "apiVersion": 5
+}

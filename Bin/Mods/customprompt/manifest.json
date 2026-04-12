@@ -1,0 +1,9 @@
+{
+  "id": "com.example.customprompt",
+  "name": "customprompt",
+  "version": "1.0.0",
+  "author": "you",
+  "description": "Example mod that overrides the prompt via Prompt()",
+  "entry": "main.so",
+  "apiVersion": 2
+}

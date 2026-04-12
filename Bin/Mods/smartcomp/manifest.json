@@ -1,0 +1,9 @@
+{
+  "id": "com.example.smartcomp",
+  "name": "smartcomp",
+  "version": "1.0.0",
+  "author": "example",
+  "description": "Context-aware tab completions for git/docker/kill + syntax highlighting",
+  "entry": "main.so",
+  "apiVersion": 5
+}
