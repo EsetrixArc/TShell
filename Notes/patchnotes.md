@@ -10,7 +10,9 @@ pre-V1: private development, shared with friends on discord for feedback.
 v1.0.0-release: first (public) release.
 
 v1.0.1: minor patches that i forgot. 
+
 read:
+
 https://github.com/EsetrixArc/TShell/commit/0b0fc589b2b181d8f33deca8e238d28bdcff29f8 < patch errors with Modloader.
 
 https://github.com/EsetrixArc/TShell/commit/8798c5bfbb11ca3d2e35aecbd85fe389e3d3f7ec < small patch
