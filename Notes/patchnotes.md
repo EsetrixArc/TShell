@@ -28,30 +28,53 @@ To see individual commits/code changes.
 ## v1.1.0-f*:
 ---
 Heredoc fork eliminated. Two new parent-side helpers (for future fork optim):
+
     · resolveHeredocFds(reds): called in the parent before any fork. Creates the pipe, writes the full content synchronously, closes the write end, stores the read-fd as "heredoc:fd:<n>" in the redirect target. Both ends are FD_CLOEXEC so unrelated children never inherit them.
+
     · closeHeredocFds(reds): releases the read-fd after all children that need it have been forked.
+    
     · applyRedirects now just dup2s the pre-created fd instead of forking a writer grandchild
+
 Terminal control(tcsetpgrp).
+
 The single-command runCommand path was the only path that never had setpgid/tcsetpgrp. Fixed:
+
     · Child: setgpid(0,0) + tcsetpgrp(STDIN_FILENO, getpid()) before signal resets and exec: the child owns the terminal before it runs, so Ctrl+C hits it directly.
+    
     · Parent: race-free setpgid(pid,pid) + tcsetpgrp(STDIN_FILENO, pid) after fork.
+    
     · waitpid now uses WUNTRACED: Ctrl+Z is caught and registers a stopped Job. matching the pipeline path.
+    
     · Terminal is reclaimed with tcsetpgrp(STDIN_FILENO, getpgrp()) after wait.
-Heredoc wireing: resolveHeredocFds/closeHeredocFds called in both runCommand and the multistage pipeline loop. In the pipeline, a StageData struct pre-resolves all stages' redirects before the first fork; each child closes the other stages' fds before applyRedirects.
+
+Heredoc wireing: resolveHeredocFds/closeHeredocFds called in both runCommand and the multistage pipeline loop. In the pipeline, a StageData struct pre-resolves all stages' redirects before the first 
+
+fork; each child closes the other stages' fds before applyRedirects.
+
 AST evaluator: execAST promoted from static to external linkage. Namespace alias tshp = tsh replaces the conflicting using tsh::AstNode. Declarations that were colliding with ::AstNode from ModdingAPI.
 
 Real AST with operator precedence. Full recursive-descent parser:
+
 · ParseList -> parseAndOr -> parsePipeline -> collectLeaf
+
 · Precendence: |/|& binds tightest, then &&/||, then ;. so:
-    a ; b && c || d
+  a ; b && c || d
   parses as Seq(a, AndOr(b,c,d)). Not the flat left-to-right the old parseSections loop produced.
+
 · Same tshp=tsh alias fix to resolve the AstNode name clash cleanly.
 
-Interactive loop uses AST. The old parseSections + manual section.delimiter chain-breaking loop is replaced with parseAST + execAST. All operator precedence, short-circuit evaluation, and background handling are now driven by the tree, not string scanning.
+Interactive loop uses AST. The old parseSections + manual section.delimiter chain-breaking loop is replaced with parseAST + execAST. All operator precedence, short-circuit evaluation, and background 
+
+handling are now driven by the tree, not string scanning.
+
 PreParse hook hardening. Four new guarentees on every hook call:
+
 1. Exception isolation: Each hook runs in try/catch; a throwing hook is autodisabled for the session, its partial mutation rolled back.
+
 2. Growth cap: a rewrite that expands the line beyond max(16xoriginal, 4096) bytes is silently discarded.
+
 3. Safe-mode block: when --safe is active, any rewrite that changes non-whitespace content is rejected with a warning.
+
 4. Bad-hook GC: Disabled hook indices are erased from g_hooks[PreParse] in reverse order after each dispatch.
 
 Made collectLeaf detect a leading `(` at the start of its first token and scan the raw source for the matching `)`, collecting the full balanced group as a single Cmd note text like `(cd / && ls)` to fix a bug where subshells wouldn't work because the lexer keeps both params as regular word characters:
