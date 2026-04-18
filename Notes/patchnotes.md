@@ -54,14 +54,21 @@ PreParse hook hardening. Four new guarentees on every hook call:
 3. Safe-mode block: when --safe is active, any rewrite that changes non-whitespace content is rejected with a warning.
 4. Bad-hook GC: Disabled hook indices are erased from g_hooks[PreParse] in reverse order after each dispatch.
 
-Made collectLeaf detect a leading `(` at the start of its first token and scan the raw source for the matching `)`, collecting the full balanced group as a single Cmd note text like `(cd / && ls) to fix a bug where subshells wouldn't work because the lexer keeps both params as regular word characters:
+Made collectLeaf detect a leading `(` at the start of its first token and scan the raw source for the matching `)`, collecting the full balanced group as a single Cmd note text like `(cd / && ls)` to fix a bug where subshells wouldn't work because the lexer keeps both params as regular word characters:
+
 `(cd / && ls)`
+
 becomes:
-`Word:"(cd"
+
+```
+Word:"(cd"
 Word:"/"
 &&
-Word:"ls)"`
+Word:"ls)"
+```
+
 the && is a real operation, so it splits into:
+
 `And("(cd /", "ls))`
 
 which made it so neither side passes isGroup() since "(cd /" doesn't start/end with parens.
