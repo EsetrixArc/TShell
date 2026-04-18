@@ -12,10 +12,15 @@ v1.0.0-release: first (public) release.
 v1.0.1: minor patches that i forgot. 
 read:
 https://github.com/EsetrixArc/TShell/commit/0b0fc589b2b181d8f33deca8e238d28bdcff29f8 < patch errors with Modloader.
+
 https://github.com/EsetrixArc/TShell/commit/8798c5bfbb11ca3d2e35aecbd85fe389e3d3f7ec < small patch
+
 https://github.com/EsetrixArc/TShell/commit/e21eaf0d29c58f2373151721d6864417dcccb6f4 < added dependencies.
+
 https://github.com/EsetrixArc/TShell/commit/d07c1f456fdc46bb8ed8811d6e33a3e1f8727579 < update readme, make + pkgbuild.
+
 https://github.com/EsetrixArc/TShell/commit/5c3863bb4affe85307bc1836225fb78293ea2c1f < first private github release after large internal refactors.
+
 To see individual commits/code changes.
 
 v1.1.0-f*:
