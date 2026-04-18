@@ -25,8 +25,8 @@ https://github.com/EsetrixArc/TShell/commit/5c3863bb4affe85307bc1836225fb78293ea
 
 To see individual commits/code changes.
 
-v1.1.0-f*:
-```
+## v1.1.0-f*:
+---
 Heredoc fork eliminated. Two new parent-side helpers (for future fork optim):
     · resolveHeredocFds(reds): called in the parent before any fork. Creates the pipe, writes the full content synchronously, closes the write end, stores the read-fd as "heredoc:fd:<n>" in the redirect target. Both ends are FD_CLOEXEC so unrelated children never inherit them.
     · closeHeredocFds(reds): releases the read-fd after all children that need it have been forked.
@@ -69,5 +69,4 @@ which made it so neither side passes isGroup() since "(cd /" doesn't start/end w
 Made it so the raw (unexpanded) cmdText is stored and only call `parseArgs`/expand inside the child after `applyInlineEnvChild`. because commands that would use `VAR=000 echo $VAR` wouldn't print correctly because it expands VAR early in the parent instead of the forked child.
 
 Minor fix: g_interactive undefined symbol in ttyguard: the prebuilt Apr12 binary was compiled when mod.cpp still referenced g_interactive. rebuilt from source.
-
-```
+---
