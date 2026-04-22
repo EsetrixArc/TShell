@@ -5,6 +5,8 @@ This is just a list of updates I've done over time.
 Versions that are Major(x.*.*) update or a Minor(*.x.*) update that jumps over 3 numbers (e.g., 1.x.y -> 2.x.y, 1.2.x -> 1.5.x) will likely have updates to the modding API. compat will be kept for up to 5 minor versions, or 1 major. (v1 mods work on v2 modloader, v1.2 mods work on 1.7, v1.1 will most likely not work on v1.7).
 Versions present here that are not released are upcoming patches coming to the latest version. In the case you have an issue with the shell and you open a github issue, read the latest patchnotes on the next version release to see if the issue is already fixed before making an issue report.
 
+---
+
 pre-V1: private development, shared with friends on discord for feedback.
 
 v1.0.0-release: first (public) release.
@@ -25,8 +27,10 @@ https://github.com/EsetrixArc/TShell/commit/5c3863bb4affe85307bc1836225fb78293ea
 
 To see individual commits/code changes.
 
-## v1.1.0-f*:
 ---
+
+## v1.1.0-f*:
+
 Heredoc fork eliminated. Two new parent-side helpers (for future fork optim):
 
     · resolveHeredocFds(reds): called in the parent before any fork. Creates the pipe, writes the full content synchronously, closes the write end, stores the read-fd as "heredoc:fd:<n>" in the redirect target. Both ends are FD_CLOEXEC so unrelated children never inherit them.
