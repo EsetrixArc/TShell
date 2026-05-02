@@ -21,24 +21,6 @@ A modular, hackable C++ shell with a built-in mod system, themes, tab completion
 
 ## Building
 
-### Interactive build (recommended)
-
-```bash
-./build.sh
-```
-
-This compiles the build helper and launches a step-by-step config UI where you choose:
-
-| Option | Description |
-|--------|-------------|
-| Color output | Enable/disable ANSI color in the shell |
-| Standalone vs system | Standalone disables mods; system install keeps full mod support |
-| Debug / Release | Debug adds AddressSanitizer and debug symbols |
-| Build tshc | Whether to also compile the mod compiler tool |
-| Install | Automatically run `make install` after building |
-
-### Manual build
-
 ```bash
 make          # build TShell.o (the shell binary)
 make tshc     # build the tshc mod compiler
